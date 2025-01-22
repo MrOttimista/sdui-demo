@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "./firebaseConfig";
 import SchemaRenderer from "./schemaRenderer";
 
@@ -9,32 +9,35 @@ const App = () => {
   const [uiSchema, setUiSchema] = useState([]);
 
   useEffect(() => {
+    // Get last part of URL
+    const page = window.location.pathname.split("/").pop();
+    const target = page === "" ? "home" : page;
+
     const fetchData = async () => {
       try {
-        const collectionRef = collection(db, "layout");
-        const querySnapshot = await getDocs(collectionRef);
+        // Reference to the specific document by target id
+        const docRef = doc(db, "layout", target);
 
-        const data = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        // Fetch the document
+        const docSnap = await getDoc(docRef);
 
-        console.log("Collection data:", data);
-        setUiSchema(data);
+        if (docSnap.exists()) {
+          // Document data
+          console.log("Document data:", docSnap.data());
+          setUiSchema({ ...docSnap.data() });
+        } else {
+          console.log("No such document!");
+        }
       } catch (error) {
-        console.error("Error fetching collection:", error);
+        console.error("Error fetching document:", error);
       }
     };
 
     fetchData();
   }, []);
-
   return (
     <div className="App App-header">
-      <h1>Server-Driven UI Demo</h1>
-      <SchemaRenderer
-        schema={uiSchema?.find((item) => item.id === "home")?.sections ?? []}
-      />
+      <SchemaRenderer schema={uiSchema?.sections ?? []} />
     </div>
   );
 };

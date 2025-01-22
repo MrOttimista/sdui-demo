@@ -1,9 +1,14 @@
 import React from "react";
+import ComplexHeader from "./ComplexHeader";
 
 const renderNode = (node) => {
   switch (node.type) {
-    case "h1":
-      return <h1 key={node.content}>{node.content}</h1>;
+    case "header":
+      return (
+        <h1 key={node.content} {...node.props}>
+          {node.content}
+        </h1>
+      );
     case "image":
       return (
         <img
@@ -12,6 +17,8 @@ const renderNode = (node) => {
           alt={node.props.alt || "image"}
         />
       );
+    case "complex-header":
+      return <ComplexHeader />;
     default:
       return null;
   }
